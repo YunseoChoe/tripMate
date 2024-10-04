@@ -1,7 +1,4 @@
-# tripMate
-2024년 3학년 2학기 소프트웨어프로젝트
-
-## React + Vite
+# React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
