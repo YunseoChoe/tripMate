@@ -2,7 +2,7 @@ import styles from "./Header.module.css";
 import Logo from "../assets/logo.png";
 import LoginImage from "../assets/login.png";
 
-export default function Header() {
+export default function Header_A() {
   return (
     <header className={styles.header}>
       <div className={styles.header_logo}>
@@ -10,10 +10,10 @@ export default function Header() {
         <p className={styles.header_logo_text}>TripMate</p>
       </div>
       <div className={styles.header_login}>
-        <img src={LoginImage} className={styles.header_login_image} alt="login" />
-        <a to="/login" className={styles.header_login_text}>
-          로그인
+      <a to="/mytrip" className={styles.header_mytrip_text}>
+          내 여행
         </a>
+        <img src={LoginImage} className={styles.header_login_image} alt="login" />
       </div>
     </header>
   );
