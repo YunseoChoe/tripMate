@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 // import { isTokenValid } from '../utils/tokenUtils'; // 파일 경로에 맞춰 임포트
 import Header from '../Components/Header';  // Header 컴포넌트 경로
 import Button from '../Components/Button';  // Button 컴포넌트 경로
+import SmallChatComponent from '../Components/SmallChatComponent'; // 작은 채팅창 컴포넌트 경로
 import './Home.css';  // Home 페이지의 CSS 파일
 
 const Home = () => {
@@ -42,6 +43,7 @@ const Home = () => {
           <img src="지도 이미지 경로" alt="Map" />
         </div>
       </div>
+      <SmallChatComponent />
     </div>
   );
 }
