@@ -1,0 +1,258 @@
+.desc {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+}
+
+.desc_left {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.desc_image {
+  width: 700px;
+  height: 500px;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  margin-left: 50px;
+}
+
+.login_image {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+}
+
+.desc_button {
+  width: 150px;
+  height: 80px;
+  border: none;
+  border-radius: 10px;
+  background-color: pink;
+  font-size: 1.5rem;
+  color: white;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  margin-left: 10rem;
+}
+
+.desc_header {
+  font-size: 4rem;
+}
+
+/* 화면 중앙에 모든 요소를 배치하는 컨테이너 */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+}
+
+
+/* USER_ID 스타일 */
+.user_id {
+  font-size: 30px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+/* '나의 일정' */
+.my_trip {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+/* '전체 일정' */
+.all_schedule {
+  font-size: 20px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+/* '전체 일정' 옆의 화살표 아이콘 */
+.arrow {
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+/* 나의 여정과 전체 일정을 수평 배치하는 컨테이너 */
+.trip_schedule_container {
+  display: flex;
+  justify-content: space-between;
+  width: 2000px;
+  margin-bottom: 20px;
+}
+
+/* 회색 박스 스타일 (기존) */
+.schedule_box {
+  width: 2000px;
+  height: 650px;
+  background-color: #f6f6f6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-top: 0;
+  border-radius: 5px;
+  padding: 0 10px;
+}
+
+/* 일정 항목을 수평으로 배치 */
+.schedule_item {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 660px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.schedule_separator {
+  width: 1980px;
+  border-bottom: 2px solid #ccc;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+/* 이미지 크기 조정 및 불필요한 여백 제거 */
+.schedule_image {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 0;
+}
+
+/* 회색 박스 내의 텍스트 */
+.schedule_box p {
+  display: block;
+  margin-bottom: 10px;
+  white-space: normal;
+  margin: 0;
+  font-size: 36px;
+}
+
+/* 일정 텍스트와 D-9을 수평으로 배치하는 컨테이너 */
+.schedule_content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* 일정 제목과 참여자, 날짜 텍스트를 묶음 */
+.schedule_details {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* D-9을 일정 날짜의 오른쪽에 배치 */
+.schedule_days_left {
+  margin-left: 20px;
+}
+
+/* 일정 제목 (우정 여행) 글씨 크기 */
+.schedule_details h3 {
+  font-size: 36px;
+  font-weight: bold;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+/* 참여자와 날짜, 글씨 크기 */
+.schedule_details p {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+/* D-9 글씨 크기 */
+.schedule_days_left p {
+  font-size: 30px;
+  font-weight: bold;
+  margin-top: 5px;
+  margin-left: 200px;
+}
+
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+/* 드롭다운 메뉴 스타일 */
+.dropdown_container {
+  position: relative;
+  cursor: pointer;
+}
+
+/* 드롭다운 메뉴 스타일 */
+.dropdown_menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 150px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  list-style: none;
+  padding: 10px;
+  margin: 0;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+/* 드롭다운 메뉴 항목 스타일 */
+.dropdown_menu li {
+  padding: 5px 0;
+  cursor: pointer;
+  color: black;
+  transition: color 0.3s ease;
+}
+
+/* 드롭다운 항목에 호버 또는 클릭 시 스타일 */
+.dropdown_menu li:hover,
+.dropdown_menu li:active {
+  color: pink;
+  background-color: #f0f0f0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.page_button {
+  margin: 0 10px;
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.page_button.active {
+  background-color: pink;
+  color: white;
+  border-color: pink;
+}
+
+.page_button:hover {
+  background-color: #e0e0e0;
+}
