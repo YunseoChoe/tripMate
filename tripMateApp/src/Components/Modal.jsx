@@ -313,7 +313,6 @@ export default function Modal({ content, handleCloseModal }) {
           <StyledModalCloseButton onClick={handleCloseModal}>X</StyledModalCloseButton>
           <StyledBackButton onClick={handleBackStep}>←</StyledBackButton>
 
-          {/* STEP 1: 여행 제목 입력 */}
           {showStep1 && (
             <>
               <StyledModalTitle>STEP 1. 여행 제목을 입력해 주세요!</StyledModalTitle>
