@@ -29,8 +29,8 @@ const StyledModalContent = styled.div`
 `;
 
 const StyledModalCloseButton = styled.button`
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border: none;
   border-radius: 50%;
   background-color: white;
@@ -38,13 +38,34 @@ const StyledModalCloseButton = styled.button`
   top: 10px;
   right: 10px;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+`;
+
+const StyledBackButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background-color: white;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 `;
 
 const StyledModalTitle = styled.h1`
   font-size: 1.7rem;
   text-align: center;
-  margin-top: 20px;
+  margin-top: 50px;
   border-bottom: 3px solid pink;
   padding-bottom: 10px;
   margin-bottom: 30px;
@@ -54,6 +75,7 @@ const StyledInput = styled.input`
   width: 80px;
   padding: 5px;
   margin: 5px;
+  background-color: #ffe6f2;
   border: 2px solid pink;
   border-radius: 5px;
   font-size: 1rem;
@@ -61,12 +83,16 @@ const StyledInput = styled.input`
 `;
 
 const StyledTextInput = styled.input`
-  width: 300px;
+  width: 500px;
+  height: 50px;
   padding: 10px;
+  margin-top: 100px;
   margin-right: 10px;
+  background-color: #ffe6f2;
   border: 2px solid pink;
   border-radius: 5px;
   font-size: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 `;
 
 const StyledSelect = styled.select`
@@ -203,7 +229,8 @@ const StyledImage = styled.img`
 `;
 
 export default function Modal({ content, handleCloseModal }) {
-  const [showCalendar, setShowCalendar] = useState(true);
+  const [showStep1, setShowStep1] = useState(true);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [showTimeSetting, setShowTimeSetting] = useState(false);
   const [showInviteFriends, setShowInviteFriends] = useState(false);
   const [showNewPage, setShowNewPage] = useState(false);
@@ -212,7 +239,7 @@ export default function Modal({ content, handleCloseModal }) {
   const [endTime, setEndTime] = useState({ hour: '', minute: '', period: '오전' });
   const [friendId, setFriendId] = useState('');
   const [friendsList, setFriendsList] = useState(['jjang', 'yoon', 'choi', 'jung']);
-
+  const [title, setTitle] = useState("");
 
   useEffect(() => {
     if (showNewPage) {
@@ -223,6 +250,32 @@ export default function Modal({ content, handleCloseModal }) {
       return () => clearTimeout(timer);
     }
   }, [showNewPage, handleCloseModal]);
+
+  const handleNextStep = () => {
+    if (showStep1) {
+      setShowStep1(false);
+      setShowCalendar(true);
+    } else if (showCalendar) {
+      setShowCalendar(false);
+      setShowTimeSetting(true);
+    } else if (showTimeSetting) {
+      setShowTimeSetting(false);
+      setShowInviteFriends(true);
+    }
+  };
+
+  const handleBackStep = () => {
+    if (showCalendar) {
+      setShowCalendar(false);
+      setShowStep1(true);
+    } else if (showTimeSetting) {
+      setShowTimeSetting(false);
+      setShowCalendar(true);
+    } else if (showInviteFriends) {
+      setShowInviteFriends(false);
+      setShowTimeSetting(true);
+    }
+  };
 
   const handleRangeChange = (range) => {
     setSelectedRange(range);
@@ -243,15 +296,14 @@ export default function Modal({ content, handleCloseModal }) {
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return '????년 ?월 ?일';
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
-  };
-
-
   const handleInviteClick = () => {
     setShowInviteFriends(false);
     setShowNewPage(true);
+  };
+
+  const formatDate = (date) => {
+    if (!date) return '????년 ?월 ?일';
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
   };
 
   return (
@@ -259,18 +311,27 @@ export default function Modal({ content, handleCloseModal }) {
       <StyledModal>
         <StyledModalContent>
           <StyledModalCloseButton onClick={handleCloseModal}>X</StyledModalCloseButton>
+          <StyledBackButton onClick={handleBackStep}>←</StyledBackButton>
 
-          {showNewPage && (
-            <NewPageContent>
-              <StyledImage src={morae} alt="모래시계 이미지" />
-              <NewPageTitle>모든 설정이 완료되었습니다!</NewPageTitle>
-              <NewPageMessage>잠시만 기다려주세요...</NewPageMessage>
-            </NewPageContent>
+          {/* STEP 1: 여행 제목 입력 */}
+          {showStep1 && (
+            <>
+              <StyledModalTitle>STEP 1. 여행 제목을 입력해 주세요!</StyledModalTitle>
+              <div style={{ textAlign: 'center' }}>
+                <StyledTextInput
+                  type="text"
+                  placeholder="여행 제목을 입력하세요"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+                <StyledSubmitButton onClick={handleNextStep}>확인</StyledSubmitButton>
+              </div>
+            </>
           )}
 
           {showCalendar && (
             <>
-              <StyledModalTitle>원하는 날짜 범위를 선택하세요</StyledModalTitle>
+              <StyledModalTitle>STEP 2. 여행 일정을 선택해 주세요!</StyledModalTitle>
               <CalendarContainer>
                 <StyledCalendar
                   selectRange={true}
@@ -330,9 +391,7 @@ export default function Modal({ content, handleCloseModal }) {
                   onChange={(e) => handleTimeChange(setEndTime, 'minute', e.target.value)}
                 />
 
-                <StyledSubmitButton onClick={() => { setShowTimeSetting(false); setShowInviteFriends(true); }}>
-                  확인
-                </StyledSubmitButton>
+                <StyledSubmitButton onClick={handleNextStep}>확인</StyledSubmitButton>
               </LightPinkBackground>
             </>
           )}
@@ -361,6 +420,14 @@ export default function Modal({ content, handleCloseModal }) {
                 <StyledInviteButton onClick={handleInviteClick}>초대</StyledInviteButton>
               </ButtonContainer>
             </>
+          )}
+
+          {showNewPage && (
+            <NewPageContent>
+              <StyledImage src={morae} alt="모래시계 이미지" />
+              <NewPageTitle>모든 설정이 완료되었습니다!</NewPageTitle>
+              <NewPageMessage>잠시만 기다려주세요...</NewPageMessage>
+            </NewPageContent>
           )}
         </StyledModalContent>
       </StyledModal>
