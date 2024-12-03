@@ -29,6 +29,7 @@ function parseJwt(token) {
 const Plan = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
+  const [tripDetails, showTripDetails] = useState([]);
   const token = localStorage.getItem("access_token");
   const [userId, setUserId] = useState("");
   const [waypoints, setWaypoints] = useState([]);
@@ -55,6 +56,19 @@ const Plan = () => {
     end_date = plan.end_date;
     start_date = plan.start_date;
   });
+
+  useEffect(() => {
+    // 로컬 스토리지에서 경유지 데이터를 로드
+    const savedWaypoints = localStorage.getItem("waypoints");
+    if (savedWaypoints) {
+      setWaypoints(JSON.parse(savedWaypoints));
+    }
+  }, []);
+
+  useEffect(() => {
+    // 경유지 상태가 변경될 때 로컬 스토리지에 저장
+    localStorage.setItem("waypoints", JSON.stringify(waypoints));
+  }, [waypoints]);
 
   useEffect(() => {
     if (plans.length > 0) {
@@ -125,9 +139,18 @@ const Plan = () => {
 
     socket.current.on("detailTripCreated", (response) => {
       /**
-       * detailTrip 생성시 해당 이벤트로 리스트 목록 반환해줌
+       * detailTrip 생성 시 서버로부터 받은 데이터 처리
        */
-      console.log(response);
+      console.log("새로운 장소 데이터 수신:", response);
+
+      // 수신한 데이터를 상태에 추가
+      setWaypoints((prevWaypoints) => [...prevWaypoints, response]);
+
+      // 선택된 날짜의 경유지 목록 업데이트
+      setDayWaypoints((prevDayWaypoints) => ({
+        ...prevDayWaypoints,
+        [selectedDay]: [...(prevDayWaypoints[selectedDay] || []), response],
+      }));
     });
 
     socket.current.emit("getDetailTripList", { room: +tripId, day: 1 });
@@ -136,6 +159,12 @@ const Plan = () => {
       console.log(response);
 
       setWaypoints(response);
+    });
+
+    //내용 가져오기
+    socket.current.on("detailTripCreated", (response) => {
+      console.log("새로운 장소 데이터 수신:", response);
+      showTripDetails(response);
     });
 
     // WebSocket 해제
@@ -228,10 +257,14 @@ const Plan = () => {
   const handleDayChange = (day) => {
     setDayWaypoints((prev) => ({
       ...prev,
-      [selectedDay]: waypoints,
+      [selectedDay]: waypoints, // 현재 날짜의 경유지 저장
     }));
 
-    setWaypoints(dayWaypoints[day] || []);
+    const dayWaypointsData = dayWaypoints[day] || [];
+    setWaypoints(dayWaypointsData);
+
+    // 로컬 스토리지에도 선택된 날짜의 경유지를 저장
+    localStorage.setItem("waypoints", JSON.stringify(dayWaypointsData));
     setSelectedDay(day);
   };
 
