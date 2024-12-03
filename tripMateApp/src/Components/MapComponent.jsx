@@ -156,8 +156,6 @@ const MapComponent = ({
   }, [waypoints, map, geocoder]);
 
   const handleReset = () => {
-    setStartAddress("");
-    setEndAddress("");
     setWaypoints([]);
     setStartCoords(null);
     setEndCoords(null);
