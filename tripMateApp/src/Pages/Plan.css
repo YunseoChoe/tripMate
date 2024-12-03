@@ -129,6 +129,19 @@
   cursor: pointer;
 }
 
+.push-button {
+  position: absolute;
+  right: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  background-color: #fcd4f0;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 .visit-place-item:last-child {
   border-bottom: none;
 }
@@ -196,7 +209,7 @@
 
 .save-button {
   position: relative;
-  left: 300px;
+  left: 200px;
   margin-top: 25px;
   width: 3vw;
   height: 4vh;
