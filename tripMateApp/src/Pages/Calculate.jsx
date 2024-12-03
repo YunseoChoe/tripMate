@@ -132,8 +132,13 @@ const Calculate = () => {
             description: '',
             day: '', // day는 초기화 필요 없음
         });
-
-        // window.location.reload();
+    
+        // 서버에서 새 경비 리스트를 받아오는 이벤트 리스너 등록
+        socket.current.on("expenseList", (updatedExpenses) => {
+            console.log("추가해서 받은 경비: ", updatedExpenses);
+            // 상태 업데이트
+            setExpenses(updatedExpenses);
+        });
     };
 
     // 경비 수정 핸들러
@@ -257,60 +262,70 @@ const Calculate = () => {
                             </option>
                         ))}
                     </select>
-                    {expenses.length > 0 ? (
+                    {/* {expenses.length > 0 ? (
                         <>
                             <div className='day-price'>
-                                {/* expenses 배열의 가격을 모두 더한 값을 표시 */}
                                 {expenses.reduce((acc, expense) => acc + expense.price, 0)}원
                             </div>
                         </>
                     ) : (
                         <div className="day-price">경비가 없습니다.</div>
-                    )}
+                    )} */}
                     </div>
                 
-                <div className='expense-list'>
+                    <div className='expense-list'>
                     <table className="expense-table">
-                        <thead>
-                            <tr>
-                                <th>카테고리</th>
-                                <th>내용</th>
-                                <th>가격</th>
-                                <th>수정</th>
-                                <th>삭제</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {expenses.length > 0 ? (
-                                expenses.map((expense) => (
-                                    <tr key={expense.id}>
-                                        <td>{expense.category}</td>
-                                        <td>{expense.description}</td>
-                                        <td>{expense.price}원</td>
-                                        <td>
-                                            <Button 
-                                                customClass='list-button'
-                                                text="수정"
-                                                onClick={() => handleEditExpense(expense)}
-                                            />
-                                        </td>
-                                        <td>
-                                            <Button 
-                                                customClass='list-button'
-                                                text="삭제"
-                                                onClick={() => handleDeleteExpense(expense.id)}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="5" style={{ textAlign: 'center' }}>경비가 없습니다.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+    <thead>
+        <tr>
+            <th>카테고리</th>
+            <th>내용</th>
+            <th>가격</th>
+            <th>수정</th>
+            <th>삭제</th>
+        </tr>
+    </thead>
+    <tbody>
+        {expenses.length > 0 ? (
+            expenses
+                .filter(expense => {
+                    // 날짜 필터링: expense.date와 selectedDay 비교
+                    const expenseDate = new Date(expense.date);
+                    const startDate = new Date(start_date); // 여행 시작일
+                    const dayDifference = Math.ceil((expenseDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                    return dayDifference === selectedDay; // 선택된 날과 일치하는 경비만 표시
+                })
+                .map(expense => (
+                    <tr key={expense.id}>
+                        <td>{expense.category}</td>
+                        <td>{expense.description}</td>
+                        <td>{expense.price}원</td>
+                        <td>
+                            <Button 
+                                customClass='list-button'
+                                text="수정"
+                                onClick={() => handleEditExpense(expense)}
+                            />
+                        </td>
+                        <td>
+                            <Button 
+                                customClass='list-button'
+                                text="삭제"
+                                onClick={() => handleDeleteExpense(expense.id)}
+                            />
+                        </td>
+                    </tr>
+                ))
+        ) : (
+            <tr>
+                <td colSpan="5" style={{ textAlign: 'center' }}>경비가 없습니다.</td>
+            </tr>
+        )}
+    </tbody>
+</table>
+
+</div>
+
                 <form className="expense-form" onSubmit={editingExpenseId ? handleUpdateExpense : handleCreateExpense}>
                     <input
                         className="expense-input"
