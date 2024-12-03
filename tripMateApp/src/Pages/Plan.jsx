@@ -29,7 +29,6 @@ function parseJwt(token) {
 const Plan = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
-  const [tripDetails, showTripDetails] = useState([]);
   const token = localStorage.getItem("access_token");
   const [userId, setUserId] = useState("");
   const [waypoints, setWaypoints] = useState([]);
@@ -139,18 +138,9 @@ const Plan = () => {
 
     socket.current.on("detailTripCreated", (response) => {
       /**
-       * detailTrip 생성 시 서버로부터 받은 데이터 처리
+       * detailTrip 생성시 해당 이벤트로 리스트 목록 반환해줌
        */
-      console.log("새로운 장소 데이터 수신:", response);
-
-      // 수신한 데이터를 상태에 추가
-      setWaypoints((prevWaypoints) => [...prevWaypoints, response]);
-
-      // 선택된 날짜의 경유지 목록 업데이트
-      setDayWaypoints((prevDayWaypoints) => ({
-        ...prevDayWaypoints,
-        [selectedDay]: [...(prevDayWaypoints[selectedDay] || []), response],
-      }));
+      console.log(response);
     });
 
     socket.current.emit("getDetailTripList", { room: +tripId, day: 1 });
@@ -159,12 +149,6 @@ const Plan = () => {
       console.log(response);
 
       setWaypoints(response);
-    });
-
-    //내용 가져오기
-    socket.current.on("detailTripCreated", (response) => {
-      console.log("새로운 장소 데이터 수신:", response);
-      showTripDetails(response);
     });
 
     // WebSocket 해제
