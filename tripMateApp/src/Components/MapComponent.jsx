@@ -92,6 +92,28 @@ const MapComponent = ({
   };
 
   useEffect(() => {
+    const savedStartAddress = localStorage.getItem("startAddress");
+    const savedEndAddress = localStorage.getItem("endAddress");
+    const savedWaypoints = localStorage.getItem("waypoints");
+
+    if (savedStartAddress) setStartAddress(savedStartAddress);
+    if (savedEndAddress) setEndAddress(savedEndAddress);
+    if (savedWaypoints) setWaypoints(JSON.parse(savedWaypoints)); // 경유지 로드
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("waypoints", JSON.stringify(waypoints));
+  }, [waypoints]);
+
+  useEffect(() => {
+    localStorage.setItem("startAddress", startAddress);
+  }, [startAddress]);
+
+  useEffect(() => {
+    localStorage.setItem("endAddress", endAddress);
+  }, [endAddress]);
+
+  useEffect(() => {
     loadKakaoMapScript()
       .then(() => {
         window.kakao.maps.load(() => {
@@ -167,6 +189,17 @@ const MapComponent = ({
     setWaypoints([]);
     setStartCoords(null);
     setEndCoords(null);
+    setStartAddress("");
+    setEndAddress("");
+
+    if (startMarker) {
+      startMarker.setMap(null);
+      setStartMarker(null);
+    }
+    if (endMarker) {
+      endMarker.setMap(null);
+      setEndMarker(null);
+    }
 
     markers.forEach((marker) => {
       marker.setMap(null);
@@ -189,6 +222,10 @@ const MapComponent = ({
     }
 
     setPlacesList([]);
+
+    // 로컬 스토리지 초기화
+    localStorage.removeItem("startAddress");
+    localStorage.removeItem("endAddress");
   };
 
   const handleKeywordSearch = () => {
@@ -228,6 +265,13 @@ const MapComponent = ({
       if (status === window.kakao.maps.services.Status.OK) {
         const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
 
+        // 기존 마커 제거
+        markers.forEach((marker) => marker.setMap(null));
+        infowindows.forEach((overlay) => overlay.setMap(null));
+        setMarkers([]);
+        setInfowindows([]);
+
+        // 선택된 장소의 마커 생성
         const markerImage = new window.kakao.maps.MarkerImage(
           "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
           new window.kakao.maps.Size(30, 40),
@@ -240,11 +284,19 @@ const MapComponent = ({
           image: markerImage,
         });
 
+        // 커스텀 오버레이 생성
         const customOverlayContent = `
-          <div style="padding: 8px 12px; background: rgba(255, 255, 255, 0.9); border-radius: 8px; border: 1px solid #ddd; color: #333;">
-            ${address}
+          <div style="
+            padding: 8px 12px; 
+            background: rgba(255, 255, 255, 0.9); 
+            border-radius: 8px; 
+            border: 1px solid #ddd; 
+            color: #333;
+          ">
+            ${name || "선택된 장소"}
           </div>
         `;
+
         const overlay = new window.kakao.maps.CustomOverlay({
           map: map,
           position: coords,
@@ -252,43 +304,33 @@ const MapComponent = ({
           yAnchor: 1.5,
         });
 
-        setMarkers((prevMarkers) => [...prevMarkers, marker]);
-        setInfowindows((prevOverlays) => [...prevOverlays, overlay]);
+        // 마커와 오버레이 저장
+        setMarkers([marker]);
+        setInfowindows([overlay]);
 
+        // 지도 중심 이동
         map.setCenter(coords);
+
+        // 경유지 업데이트
+        const newWaypoint = { id, address, placeName: name, coords };
+        setWaypoints((prev) => [...prev, newWaypoint]);
+
+        // Plan.jsx의 handleSaveDayWaypoints 호출
+        if (handleSaveDayWaypoints) {
+          handleSaveDayWaypoints(newWaypoint);
+        }
       } else {
         alert("해당 주소를 지도에 추가할 수 없습니다.");
       }
     });
-
-    const newWaypoint = {
-      id,
-      address,
-      placeName: name,
-    };
-
-    setWaypoints((prev) => [...prev, newWaypoint]);
-
-    // Plan.jsx의 handleSaveDayWaypoints 호출
-    if (handleSaveDayWaypoints) {
-      handleSaveDayWaypoints(newWaypoint); // 특정 목록 전달
-    }
   };
 
   const displayPlaces = (places) => {
     const bounds = new window.kakao.maps.LatLngBounds();
 
-    const newMarkers = places.map((place) => {
-      const placePosition = new window.kakao.maps.LatLng(place.y, place.x);
-      const { marker, overlay } = createMarkerWithText(
-        map,
-        placePosition,
-        place.place_name
-      );
-
-      bounds.extend(placePosition);
-      return marker;
-    });
+    // 기존 마커 제거
+    markers.forEach((marker) => marker.setMap(null));
+    setMarkers([]);
 
     const placesWithDetails = places.map((place) => ({
       id: place.id,
@@ -297,8 +339,14 @@ const MapComponent = ({
         place.road_address_name || place.address_name || "주소 정보 없음",
     }));
 
-    setMarkers(newMarkers);
     setPlacesList(placesWithDetails);
+
+    // 경계를 검색된 장소 기준으로 조정
+    places.forEach((place) => {
+      const placePosition = new window.kakao.maps.LatLng(place.y, place.x);
+      bounds.extend(placePosition);
+    });
+
     map.setBounds(bounds);
   };
 
@@ -314,61 +362,74 @@ const MapComponent = ({
 
   const handleSearch = async () => {
     try {
+      // 키워드로 주소를 가져옴
       const _startAddress = await getAddressByKeyword(startAddress);
       const _endAddress = await getAddressByKeyword(endAddress);
+
+      if (!_startAddress || !_endAddress) {
+        alert("출발지 또는 목적지 주소를 확인해주세요.");
+        return;
+      }
 
       const startCoords = await getCoordinates(_startAddress);
       const endCoords = await getCoordinates(_endAddress);
 
-      // 기존 정보 삭제 (경유지 마커 제외)
-      infowindows.forEach((overlay) => overlay.setMap(null));
-      setInfowindows([]);
+      if (!startCoords || !endCoords) {
+        alert("출발지 또는 목적지 좌표를 확인해주세요.");
+        return;
+      }
 
-      // 기존 출발지/도착지 마커만 삭제
+      // 기존 마커 제거
       if (startMarker) startMarker.setMap(null);
       if (endMarker) endMarker.setMap(null);
 
-      // 새로 생성된 출발지 마커
-      const { marker: newStartMarker, overlay: startOverlay } =
-        createMarkerWithText(
+      // 마커 생성 함수 호출
+      const addMarker = (coords, label) => {
+        const { marker } = createMarkerWithText(
           map,
-          new window.kakao.maps.LatLng(startCoords.lat, startCoords.lng),
-          "출발지"
+          new window.kakao.maps.LatLng(coords.lat, coords.lng),
+          label
         );
-      setStartMarker(newStartMarker);
-      setInfowindows((prev) => [...prev, startOverlay]);
+        return marker;
+      };
 
-      // 새로 생성된 도착지 마커
-      const { marker: newEndMarker, overlay: endOverlay } =
-        createMarkerWithText(
-          map,
-          new window.kakao.maps.LatLng(endCoords.lat, endCoords.lng),
-          "목적지"
-        );
-      setEndMarker(newEndMarker);
-      setInfowindows((prev) => [...prev, endOverlay]);
+      // 새 출발지와 도착지 마커 설정
+      setStartMarker(addMarker(startCoords, "출발지"));
+      setEndMarker(addMarker(endCoords, "목적지"));
 
       map.setCenter(
         new window.kakao.maps.LatLng(startCoords.lat, startCoords.lng)
       );
 
-      // 경유지 처리 (마커 유지)
+      // 경유지 처리: 주소를 통해 좌표를 계산
       const waypointCoords = [];
       for (const waypoint of waypoints) {
         if (waypoint.address) {
-          const coords = await getCoordinates(waypoint.address);
-          waypointCoords.push({
-            name: waypoint.placeName || `경유지 ${waypoint.id}`,
-            x: coords.lng,
-            y: coords.lat,
-          });
+          try {
+            const coords = await getCoordinates(waypoint.address);
+            waypointCoords.push({
+              name: waypoint.placeName || `경유지 ${waypoint.id}`,
+              x: coords.lng,
+              y: coords.lat,
+            });
+          } catch (error) {
+            console.warn(
+              `경유지 ${waypoint.address}의 좌표를 가져오는 중 오류 발생:`,
+              error
+            );
+          }
         }
       }
 
       // 경로 설정
-      handleRoute(startCoords, endCoords, waypointCoords);
+      await handleRoute(startCoords, endCoords, waypointCoords);
+
+      // 로컬 스토리지에 데이터 저장
+      localStorage.setItem("startAddress", startAddress);
+      localStorage.setItem("endAddress", endAddress);
+      localStorage.setItem("waypoints", JSON.stringify(waypoints));
     } catch (error) {
-      console.error("경로 설정 오류:", error);
+      console.error("경로 설정 중 오류:", error);
       alert("경로를 설정하는 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
@@ -485,7 +546,7 @@ const MapComponent = ({
           <li
             key={index}
             className="place-item"
-            onClick={() => handlePlaceClick(place)} // 장소 클릭 핸들러 호출
+            onClick={() => handlePlaceClick(place)}
           >
             <strong>{place.name}</strong>
             <br />
