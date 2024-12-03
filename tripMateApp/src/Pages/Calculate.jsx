@@ -44,7 +44,7 @@ const Calculate = () => {
         socket.current = io('wss://www.daebak.store/expenses', {
             auth: { token }, // 인증 토큰
         });
-
+    
         // 소켓 초기화가 완료된 후에만 이벤트 리스너 등록
         socket.current.on('connect', () => {
             console.log('서버에 연결됨');
@@ -52,50 +52,48 @@ const Calculate = () => {
             socket.current.emit('joinRoom', { tripId });
             // 전체 경비 요청
             socket.current.emit('getAllExpenses', { tripId });
+            console.log("전체 경비 요청 받음");
+            socket.current.on("expenseList", (updatedExpenses) => {
+                console.log("경비 추가 안 해도 보여야 함");
+                console.log("추가해서 받은 경비: ", updatedExpenses);
+                // 상태 업데이트
+                setExpenses(updatedExpenses); // expenses 상태 업데이트
+            });
         });
-
+    
         // 날짜 별로 경비 목록 수신
         if (tripId && selectedDay) {
             // 선택된 날에 따른 경비 필터링 요청
             socket.current.emit("filterExpensesByDay", { tripId, day: selectedDay });
-
+    
             // 필터링된 경비 목록 수신
             socket.current.on("filteredExpenses", (data) => {
-                
                 // 선택한 일차의 모든 가격을 합산
                 const totalPrice = data.expenses.reduce((acc, expense) => acc + parseInt(expense.price, 10), 0);
-
+    
                 // 상태 업데이트
                 setPrice(totalPrice); // price 상태에 합산된 가격 저장
-
+    
                 const intExpenses = data.expenses.map(expense => ({
                     ...expense,
                     price: parseInt(expense.price, 10), // 금액을 정수로 변환
                 }));    
                 setExpenses(intExpenses); // 상태 업데이트
-                
             });
         }
-
-        // 새 경비 추가 시 실시간 총 경비 계산
-        socket.current.on('expenseCreated', (response) => {
-            setExpenses((prevExpenses) => {
-                const updatedExpenses = [...prevExpenses, response.newExpense];
-        
-                // 유효한 값만 필터링
-                const validExpenses = updatedExpenses.filter(expense => expense && expense.price !== undefined);
-
-                return validExpenses; // 유효한 값만 상태에 저장
-            });
+    
+        // 새 경비 추가 시 실시간으로 업데이트된 경비를 처리
+        socket.current.on("expenseList", (updatedExpenses) => {
+            console.log("추가해서 받은 경비: ", updatedExpenses);
+            setExpenses(updatedExpenses); // 상태 업데이트
         });
-        
+    
         // 컴포넌트 언마운트 시 소켓 연결 해제
         return () => {
             socket.current.disconnect();
         };
-    }, [selectedDay, tripId, socket]);
-
-
+    }, [selectedDay, tripId, setExpenses, expenses]); // 종속성 배열에서 상태 변경에 따라 실행
+    
     const handleInputChange = (e) => {
         const { name, value } = e.target;
     
@@ -167,28 +165,27 @@ const Calculate = () => {
             expenseId: editingExpenseId,
             expenseData: {
                 ...expenseData,
-                price: parseInt(expenseData.price, 10) // 가격을 정수로 변환
+                price: parseInt(expenseData.price, 10), // 가격을 정수로 변환
             },
         });
     
-        // 상태 직접 업데이트
-        setExpenses((prevExpenses) =>
-            prevExpenses.map((expense) =>
-                expense.id === editingExpenseId
-                    ? { ...expense, ...expenseData, price: parseInt(expenseData.price, 10) } // 수정된 가격 반영
-                    : expense
-            )
-        );
-    
-        // 입력 필드 초기화
-        setExpenseData({
-            price: '',
-            category: '',
-            description: '',
-            day: selectedDay,
-        });
         setEditingExpenseId(null); // 수정 모드 해제
+    
+        // 새 경비 추가 후 경비 목록을 받기 위한 이벤트 등록
+        socket.current.on("expenseCreated", (updatedExpenses) => {
+            // 상태 직접 업데이트
+            setExpenses((updatedExpenses) =>
+                updatedExpenses.map((expense) =>
+                    expense.id === editingExpenseId
+                        ? { ...expense, ...expenseData, price: parseInt(expenseData.price, 10) } // 수정된 가격 반영
+                        : expense
+                )
+            );
+            console.log("추가된 경비 목록:", updatedExpenses);
+            setExpenses(updatedExpenses); // 상태 업데이트
+        });
     };
+    
     
     // 경비 삭제 요청 처리
     const handleDeleteExpense = (expenseId) => {
@@ -223,6 +220,7 @@ const Calculate = () => {
         try {
             const total = await getTotalExpenses(tripId); // API 호출
             setTotalExpenses(total); // 상태에 총 금액 저장
+            console.log(total);
         } catch (err) {
             // 서버에서 반환한 에러 메시지 출력
             if (err.response && err.response.data && err.response.data.message) {
@@ -372,9 +370,12 @@ const Calculate = () => {
                 text="총 금액 확인"
                 onClick={handleButtonClick}
             />
-            {totalExpenses && (
-                <p className='total-price'>{totalExpenses}원</p>
+            {totalExpenses >= 0 && (
+                <p className='total-price'>
+                    {totalExpenses}{totalExpenses > 0 && '원'}
+                </p>
             )}
+
         </div> 
     );
 };
