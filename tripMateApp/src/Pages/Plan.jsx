@@ -23,7 +23,7 @@ function parseJwt(token) {
       .join("")
   );
 
-  return JSON.parse(jsonPayload);
+  return JSON.parse(jsonPayload); 
 }
 
 const Plan = () => {
