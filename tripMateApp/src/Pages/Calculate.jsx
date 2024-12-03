@@ -4,6 +4,7 @@ import './Calculate.css';
 import Header from '../Components/Header';
 import Button from '../Components/Button';
 import { getTotalExpenses } from '../Services/tripService';
+import DraggableIcon from "../Components/DraggableIcon";
 
 const Calculate = () => {
     const [expenses, setExpenses] = useState([]);
@@ -233,6 +234,9 @@ const Calculate = () => {
         <div>
             <Header />
             <div className="expense-entire">
+              <div className="draggable-container">
+                  <DraggableIcon tripId={tripId} title={title} />
+              </div>
                 <div className="calculate-header">
                     <div className="plan-list">
                         <h3 className="plan-name">제목: {title}</h3>
