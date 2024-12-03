@@ -194,6 +194,18 @@
   color: #fff;
 }
 
+.save-button {
+  position: relative;
+  left: 300px;
+  margin-top: 25px;
+  width: 3vw;
+  height: 4vh;
+  border-radius: 10px;
+  background-color: #fcd4f0;
+  border: none;
+  color: #fff;
+}
+
 .plan-info {
   margin-top: -10px;
   display: inline-flex;
