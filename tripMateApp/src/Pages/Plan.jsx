@@ -70,6 +70,23 @@ const Plan = () => {
   }, [plans]);
 
   useEffect(() => {
+    if (!socket.current) return;
+
+    // 서버에서 브로드캐스트된 데이터 수신
+    socket.current.on("detailTripUpdated", (updatedData) => {
+      console.log("새로운 장소 데이터 수신:", updatedData);
+
+      // 수신한 데이터를 상태에 추가
+      setWaypoints((prevWaypoints) => [...prevWaypoints, updatedData]);
+    });
+
+    // 클린업
+    return () => {
+      socket.current.off("detailTripUpdated");
+    };
+  }, []);
+
+  useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
       const jwtToken = token.split(" ")[1];
