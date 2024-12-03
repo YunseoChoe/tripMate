@@ -442,7 +442,10 @@ const Plan = () => {
                     {provided.placeholder}
                     <button
                       className="save-button"
-                      onClick={handleSaveDayWaypoints}
+                      onClick={() => {
+                        handleSaveDayWaypoints();
+                        alert("저장되었습니다!");
+                      }}
                     >
                       저장
                     </button>

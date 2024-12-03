@@ -75,62 +75,62 @@ const Needs = ({ tripId, title }) => {
     }
   };
 
-  return (
-    <div>
-      <Draggable>
-        {isNeedsOpen ? (
-          /* 열려 있는 상태 */
-          <div className="needs-open-container">
-            <div className="needs-open-header">
-              <h3 className="needs-title">준비물</h3>
-              <Button
-                text="x"
-                customClass="needs-close-button"
-                onClick={handleCloseClick}
-              />
-            </div>
-            <div className="needs-list">
-              {items.map((item) => (
-                <div key={item.id} className="needs-item">
-                  <input
-                    className="checkbox-style"
-                    type="checkbox"
-                    checked={item.checked}
-                    onChange={() => handleCheckChange(item.id)}
-                  />
-                  <label className="label">{item.text}</label>
-                  <Button
-                    text="삭제"
-                    customClass="needs-delete-button"
-                    onClick={() => handleDeleteItem(item.id)}
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="needs-add-item">
-              <input
-                className="needs-add-item-form"
-                type="text"
-                value={newItem}
-                onChange={(e) => setNewItem(e.target.value)}
-                placeholder=" 새로운 항목 입력"
-              />
-              <Button
-                text="+"
-                customClass="needs-add-button"
-                onClick={handleAddItem}
-              />
-            </div>
-          </div>
-        ) : (
-          /* 닫혀 있는 상태 */
-          <div className="needs-open-icon" onClick={handleOpenClick}>
-            준비물
-          </div>
-        )}
-      </Draggable>
-    </div>
-  );
+    return (
+        <div>
+            <Draggable>
+                {isNeedsOpen ? (
+                    /* 열려 있는 상태 */
+                    <div className="needs-open-container">
+                        <div className="needs-open-header">
+                            <h3 className="needs-title">준비물</h3>
+                            <Button
+                                text="x"
+                                customClass="needs-close-button"
+                                onClick={handleCloseClick}
+                            />
+                        </div>
+                        <div className="needs-list">
+                            {items.map(item => (
+                                <div key={item.id} className="needs-item">
+                                    <input
+                                        className="checkbox-style"
+                                        type="checkbox"
+                                        checked={item.checked}
+                                        onChange={() => handleCheckChange(item.id)}
+                                    />
+                                    <label className="label">{item.text}</label>
+                                    <Button
+                                        text="삭제"
+                                        customClass="needs-delete-button"
+                                        onClick={() => handleDeleteItem(item.id)}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="needs-add-item">
+                            <input
+                                className="needs-add-item-form"
+                                type="text"
+                                value={newItem}
+                                onChange={(e) => setNewItem(e.target.value)}
+                                placeholder=" 새로운 항목 입력"
+                            />
+                            <Button
+                                text="+"
+                                customClass="needs-add-button"
+                                onClick={handleAddItem}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    /* 닫혀 있는 상태 */
+                    <div className="needs-open-icon" onClick={handleOpenClick}>
+                        준비물
+                    </div>
+                )}
+            </Draggable>
+        </div>
+    );
 };
 
 export default Needs;

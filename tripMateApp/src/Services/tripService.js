@@ -1,11 +1,10 @@
 
 import axios from 'axios';
-import { SERVER_API_URL } from './api';
-const API_URL_MAKE_TRIP = `${SERVER_API_URL}/trips`;
-const API_URL_GET_PARTICIPANTS = `${SERVER_API_URL}/chat/participants`;
-const API_URL_DELETE_PARTICIPANTS = `${SERVER_API_URL}/participants`;
-const API_URL_INVITE_PARTICIPANTS = `${SERVER_API_URL}/participants`; 
-const API_URL_MY_ENTIRE_TRIPS = `${SERVER_API_URL}/trips/checkmytrips`; 
+const API_URL_MAKE_TRIP = 'https://www.daebak.store/trips';
+const API_URL_GET_PARTICIPANTS = 'https://www.daebak.store/chat/participants';
+const API_URL_DELETE_PARTICIPANTS = 'https://www.daebak.store/participants';
+const API_URL_INVITE_PARTICIPANTS = 'https://www.daebak.store/participants'; 
+const API_URL_MY_ENTIRE_TRIPS = 'https://www.daebak.store/trips/checkmytrips'; 
 
 // 여행 생성 함수
 export const createTrip = async (title, selectedRange, startTime, endTime) => {
@@ -43,7 +42,7 @@ export const inviteFriend = async (memberIds, tripId) => {
         memberIds: memberIds
     }
     try {
-        const response = await axios.post(`${SERVER_API_URL}/participants/${tripId}/invite`, memberData, {
+        const response = await axios.post(`https://www.daebak.store/participants/${tripId}/invite`, memberData, {
             headers: {
                 'Authorization': `${token}` // 인증 토큰을 헤더에 추가
             }
@@ -134,7 +133,7 @@ export const getMyTrips = async () => {
 export const getPersonalTrips = async () => {
     const token = localStorage.getItem('access_token');
     try {
-        const response = await fetch(`${SERVER_API_URL}/trips/checkpersonaltrips`, {
+        const response = await fetch('https://www.daebak.store/trips/checkpersonaltrips', {
             method: 'GET', // GET 요청
             headers: {
                 'Content-Type': 'application/json',
@@ -158,7 +157,7 @@ export const getPersonalTrips = async () => {
 export const getGroupTrips = async () => {
     const token = localStorage.getItem('access_token');
     try {
-        const response = await fetch(`${SERVER_API_URL}/trips/checkgrouptrips`, {
+        const response = await fetch('https://www.daebak.store/trips/checkgrouptrips', {
             method: 'GET', // GET 요청
             headers: {
                 'Content-Type': 'application/json',
@@ -182,7 +181,7 @@ export const getGroupTrips = async () => {
 export const leaveTrip = async (tripId) => {
     const token = localStorage.getItem('access_token');
     try {
-        const response = await axios.delete(`${SERVER_API_URL}/participants/${tripId}/escape`, {
+        const response = await axios.delete(`https://www.daebak.store/participants/${tripId}/escape`, {
             headers: {
                 Authorization: `${token}` // 인증 헤더 추가
             }
@@ -204,7 +203,7 @@ export const leaveTrip = async (tripId) => {
 export const deleteTrip = async (tripId) => {
     const token = localStorage.getItem('access_token');
     try {
-        const response = await fetch(`${SERVER_API_URL}/trips/${tripId}`, {
+        const response = await fetch(`https://www.daebak.store/trips/${tripId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `${token}`, 
@@ -240,7 +239,7 @@ export const updateTrip = async (tripId, tripData) => {
     // console.log("서버가 수신한 tripData: ", tripDatas);
 
     try {
-        const response = await axios.put(`${SERVER_API_URL}/trips/${tripId}`, tripData, {
+        const response = await axios.put(`https://www.daebak.store/trips/${tripId}`, tripData, {
             headers: {
                 'Authorization': `${token}`
             }
@@ -252,3 +251,23 @@ export const updateTrip = async (tripId, tripData) => {
         throw new Error('여행 수정 실패' , + error.message);
     }
 };
+
+// 전체 경비 받아오는 함수
+export const getTotalExpenses = async (tripId) => {
+    try {
+      // URL 구성
+      const url = `https://www.daebak.store/expenses/${tripId}/total`;
+  
+      // GET 요청 보내기
+      const response = await axios.get(url);
+  
+      console.log("성공적으로 받은 데이터 반환: ", response.data);
+      
+      // 성공적으로 받은 데이터 반환
+      return response.data; // 총 경비 데이터 반환
+    } catch (error) {
+      // 에러 처리
+      console.error("Error fetching total expenses:", error);
+      throw error; // 필요 시 호출한 쪽에서 에러 처리
+    }
+  };
