@@ -133,6 +133,15 @@ const Plan = () => {
     );
   };
 
+  const updateTripList = (sortedTrips) => {
+    console.log("Updating trip list in UI:", sortedTrips);
+    // 상태 업데이트
+    setTripDetails(sortedTrips);
+
+    // 추가 작업: 필요하다면 다른 상태 업데이트나 API 호출 등을 여기에 추가
+    localStorage.setItem("sortedTripDetails", JSON.stringify(sortedTrips));
+  };
+
   const handleAddWaypoint = (newWaypoint) => {
     const updatedWaypoints = [...waypoints, newWaypoint];
     setWaypoints(updatedWaypoints);
@@ -165,28 +174,30 @@ const Plan = () => {
     );
   };
 
-  const handleSaveDayWaypoints = async () => {
-    const dataToSave = waypoints.map(
-      ({ id, address, placeName, tripTime }, index) => ({
-        tripId, // 사용 중인 tripId를 여기에 추가 (ex: 상태나 URL에서 가져옴)
-        placeName: placeName || "", // 장소명 입력값
-        placeLocation: address || "", // 주소 (address를 placeLocation으로 매핑)
-        order: index + 1, // 리스트의 순서 (1부터 시작)
-        tripTime: tripTime || "", // 머물 시간 입력값
-        day: selectedDay, // 현재 선택된 일차
-      })
-    );
+  const handleSaveDayWaypoints = async (newWaypoint) => {
+    const dataToSave = {
+      tripId, // 사용 중인 tripId
+      placeName: newWaypoint.placeName || "", // 장소명
+      placeLocation: newWaypoint.address || "", // 주소
+      order: waypoints.length + 1, // 리스트 순서
+      tripTime: "", // 머물 시간 (필요하면 추가)
+      day: selectedDay, // 현재 선택된 일차
+    };
 
-    // 각 객체를 개별적으로 전송
-    dataToSave.forEach((data) => {
-      console.log(data);
+    try {
+      console.log("저장할 데이터:", dataToSave);
 
-      socket.current.emit("createDetailTrip", data, (err, response) => {
-        console.log(err);
-
-        console.log("createDetailTrip", response);
+      socket.current.emit("createDetailTrip", dataToSave, (err, response) => {
+        if (err) {
+          console.error("저장 중 오류:", err);
+        } else {
+          console.log("저장 완료:", response);
+          alert("목록이 저장되었습니다!");
+        }
       });
-    });
+    } catch (error) {
+      console.error("handleSaveDayWaypoints 오류:", error);
+    }
   };
 
   const handleInputChange = (id, field, value) => {
@@ -335,6 +346,7 @@ const Plan = () => {
                       <h3 className="plan-name">제목: {plan.name}</h3>
                       <div className="plan-info">
                         <div className="plan-date">
+                          {console.log(plan)}
                           <p>시작일: {plan.start_date}</p>
                           <p>종료일: {plan.end_date}</p>
                         </div>
@@ -439,16 +451,8 @@ const Plan = () => {
                         )}
                       </Draggable>
                     ))}
+
                     {provided.placeholder}
-                    <button
-                      className="save-button"
-                      onClick={() => {
-                        handleSaveDayWaypoints();
-                        alert("저장되었습니다!");
-                      }}
-                    >
-                      저장
-                    </button>
                   </ul>
                 )}
               </Droppable>
@@ -461,7 +465,9 @@ const Plan = () => {
             userId={userId}
             waypoints={waypoints}
             setWaypoints={setWaypoints}
+            handleSaveDayWaypoints={handleSaveDayWaypoints} // 함수 전달
           />
+          ;
           <Participant tripId={tripId} />
         </div>
       </div>
