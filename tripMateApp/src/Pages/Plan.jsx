@@ -163,23 +163,6 @@ const Plan = () => {
     );
   };
 
-  const updateTripList = (sortedTrips) => {
-    console.log("Updating trip list in UI:", sortedTrips);
-    // 상태 업데이트
-    setTripDetails(sortedTrips);
-
-    // 추가 작업: 필요하다면 다른 상태 업데이트나 API 호출 등을 여기에 추가
-    localStorage.setItem("sortedTripDetails", JSON.stringify(sortedTrips));
-  };
-
-  const handleAddWaypoint = (newWaypoint) => {
-    const updatedWaypoints = [...waypoints, newWaypoint];
-    setWaypoints(updatedWaypoints);
-    setDayWaypoints((prev) => ({
-      ...prev,
-      [selectedDay]: updatedWaypoints,
-    }));
-  };
 
   const handleDeleteWaypoint = (index) => {
     const updatedWaypoints = waypoints.filter((item) => item.id !== index);
@@ -217,14 +200,7 @@ const Plan = () => {
     try {
       console.log("저장할 데이터:", dataToSave);
 
-      socket.current.emit("createDetailTrip", dataToSave, (err, response) => {
-        if (err) {
-          console.error("저장 중 오류:", err);
-        } else {
-          console.log("저장 완료:", response);
-          alert("목록이 저장되었습니다!");
-        }
-      });
+      socket.current.emit("createDetailTrip", {createDetailTrip: dataToSave});
     } catch (error) {
       console.error("handleSaveDayWaypoints 오류:", error);
     }
