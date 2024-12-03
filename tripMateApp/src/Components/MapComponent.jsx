@@ -6,7 +6,12 @@ const REST_API_KEY = "61f1527120357fb0bb34c3ffe72b4377";
 
 let polyline = null;
 
-const MapComponent = ({ userId, waypoints, setWaypoints }) => {
+const MapComponent = ({
+  userId,
+  waypoints,
+  setWaypoints,
+  handleSaveDayWaypoints,
+}) => {
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
   const [geocoder, setGeocoder] = useState(null);
@@ -200,6 +205,67 @@ const MapComponent = ({ userId, waypoints, setWaypoints }) => {
         alert("검색 중 오류가 발생했습니다.");
       }
     });
+  };
+
+  const handlePlaceClick = (place) => {
+    const address = place.address;
+    const name = place.name;
+    const id = place.id;
+
+    if (!address) {
+      alert("해당 장소의 주소 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    geocoder.addressSearch(address, (result, status) => {
+      if (status === window.kakao.maps.services.Status.OK) {
+        const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+
+        const markerImage = new window.kakao.maps.MarkerImage(
+          "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+          new window.kakao.maps.Size(30, 40),
+          { offset: new window.kakao.maps.Point(15, 40) }
+        );
+
+        const marker = new window.kakao.maps.Marker({
+          map: map,
+          position: coords,
+          image: markerImage,
+        });
+
+        const customOverlayContent = `
+          <div style="padding: 8px 12px; background: rgba(255, 255, 255, 0.9); border-radius: 8px; border: 1px solid #ddd; color: #333;">
+            ${address}
+          </div>
+        `;
+        const overlay = new window.kakao.maps.CustomOverlay({
+          map: map,
+          position: coords,
+          content: customOverlayContent,
+          yAnchor: 1.5,
+        });
+
+        setMarkers((prevMarkers) => [...prevMarkers, marker]);
+        setInfowindows((prevOverlays) => [...prevOverlays, overlay]);
+
+        map.setCenter(coords);
+      } else {
+        alert("해당 주소를 지도에 추가할 수 없습니다.");
+      }
+    });
+
+    const newWaypoint = {
+      id,
+      address,
+      placeName: name,
+    };
+
+    setWaypoints((prev) => [...prev, newWaypoint]);
+
+    // Plan.jsx의 handleSaveDayWaypoints 호출
+    if (handleSaveDayWaypoints) {
+      handleSaveDayWaypoints(newWaypoint); // 특정 목록 전달
+    }
   };
 
   const displayPlaces = (places) => {
@@ -412,75 +478,11 @@ const MapComponent = ({ userId, waypoints, setWaypoints }) => {
       </div>
 
       <ul className="places-list">
-        {userId && (
-          <li className="place-item user-recommendation-title">
-            <span className="highlight-user-id">{userId}</span>님을 위한 장소
-            추천!
-          </li>
-        )}
         {placesList.map((place, index) => (
           <li
             key={index}
             className="place-item"
-            onClick={() => {
-              const address = place.address;
-              const name = place.name;
-              const id = place.id;
-
-              if (!address) {
-                alert("해당 장소의 주소 정보를 찾을 수 없습니다.");
-                return;
-              }
-
-              geocoder.addressSearch(address, (result, status) => {
-                if (status === window.kakao.maps.services.Status.OK) {
-                  const coords = new window.kakao.maps.LatLng(
-                    result[0].y,
-                    result[0].x
-                  );
-
-                  const markerImage = new window.kakao.maps.MarkerImage(
-                    "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
-                    new window.kakao.maps.Size(30, 40),
-                    { offset: new window.kakao.maps.Point(15, 40) }
-                  );
-
-                  const marker = new window.kakao.maps.Marker({
-                    map: map,
-                    position: coords,
-                    image: markerImage,
-                  });
-
-                  const customOverlayContent = `
-            <div style="padding: 8px 12px; background: rgba(255, 255, 255, 0.9); border-radius: 8px; border: 1px solid #ddd; color: #333;">
-              ${address}
-            </div>
-          `;
-                  const overlay = new window.kakao.maps.CustomOverlay({
-                    map: map,
-                    position: coords,
-                    content: customOverlayContent,
-                    yAnchor: 1.5,
-                  });
-
-                  setMarkers((prevMarkers) => [...prevMarkers, marker]);
-                  setInfowindows((prevOverlays) => [...prevOverlays, overlay]);
-
-                  map.setCenter(coords);
-                } else {
-                  alert("해당 주소를 지도에 추가할 수 없습니다.");
-                }
-              });
-
-              setWaypoints((prev) => [
-                ...prev,
-                {
-                  id: prev.length,
-                  address: place.address,
-                  placeName: place.name,
-                },
-              ]);
-            }}
+            onClick={() => handlePlaceClick(place)} // 장소 클릭 핸들러 호출
           >
             <strong>{place.name}</strong>
             <br />
@@ -491,15 +493,6 @@ const MapComponent = ({ userId, waypoints, setWaypoints }) => {
                 e.stopPropagation();
                 const kakaoMapLink = `https://map.kakao.com/link/map/${place.id}`;
                 window.open(kakaoMapLink, "_blank");
-              }}
-              style={{
-                marginLeft: "8px",
-                padding: "4px 6px",
-                fontSize: "12px",
-                backgroundColor: "#eee",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                cursor: "pointer",
               }}
             >
               ...
